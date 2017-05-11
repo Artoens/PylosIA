@@ -1,0 +1,16 @@
+	-Premier mouve au mileu
+		2eme: en opposition
+-Crée un carré:
+	-reprendre: plce montante
+	-truc pas dans le carré
+	-sinon rien
+-Contrer un carré
+-prendre une bill et la montée:
+	vérifier de pas ouvrir un carré
+-préparer un carré:
+	pas crée de "place montante"
+-placer en hauteur
+-mettre en oblique
+	-vérifier place montant
+-dans l'ordre
+	verifier place montante
