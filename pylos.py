@@ -197,24 +197,22 @@ class PylosClient(game.GameClient):
         super().__init__(server, PylosState, verbose=verbose)
         self.__name = name
 
-    def wayup(self, state):
+    def wayup(self, state, player):
         layer = 1
         while layer <= 4:
             for row in range(4 - layer):
                 for column in range(4 - layer):
                     try:
-                        state.update({
-                            'move': 'place',
-                            'to': [layer, row, column]
-                        }, 0)
+                        move = {'move': 'place', 'to': [layer, row, column]}
+                        state.update(move, player)
                         return True
-                    except game.InvalidMoveException:
-                        print('nothing')
+                    except :
+                        pass
             layer += 1
         return False
 
     def _handle(self, message):
-        pass
+       pass
 
     # return move as string
     def _nextmove(self, state):
@@ -244,29 +242,62 @@ class PylosClient(game.GameClient):
         
         return it in JSON
         """
-        """
-        for layer in range(4):
-            for row in range(4 - layer):
-                for column in range(4 - layer):
-                    if state.get(layer, row, column) == None:
-                        print(self.wayup(state))
-                        return json.dumps({
-                            'move': 'place',
-                            'to': [layer, row, column]
-                        })
-        """
-        move = {}
-        if state['turn'] == 0:
-            row = 1
-            column = 1
-            try:
-                move = {
-                    'move': 'place', 'to': [0, row, column]}
-            except game.InvalidMoveException:
-                move = {
-                    'move': 'place', 'to': [0, row + 1, column + 1]}
+        check = 0
+        player = state._state['visible']['turn']
+        noplayer = (player + 1) % 2
+        empty = True
+        while check < 10:
+            count = 0
+            if check <= 1:
+                for row in range(3):
+                    for column in range(3):
+                        if state.get(0, row, column) is not None:
+                            empty = False
+                            if state.get(0, row, column) != player:
+                                count += 1
+                                lastfound = (0, row, column)
+                                break
+                        elif state.get(0, row, column) == player:
+                            count += 1
 
-        return json.dumps(move)
+            if player == 0 and empty:
+                move = {'move': 'place', 'to': [0, 1, 1]}
+            elif player == 1 and count == 1:
+                if check <= 1:
+                    move = {'move': 'place', 'to': [0, lastfound[1]+1, lastfound[2]+1]}
+                else:
+                    move = {'move': 'place', 'to': [0, lastfound[1] - 1, lastfound[2] - 1]}
+
+
+            if check > 3:
+                full = False
+                go = False
+                for layer in range(4):
+                    for row in range(4 - layer):
+                        for column in range(4 - layer):
+                            if state.get(layer, row, column) is None:
+                                potmove = {'move': 'place', 'to': [layer, row, column]}
+                                state.update(potmove, player)
+                                if not self.wayup(state, noplayer):
+                                    return json.dumps(potmove)
+                                elif self.wayup(state, noplayer):
+                                    full = True
+                                elif full:
+                                    print('reset')
+                                    row = 0
+                                    column = 0
+                                    go = True
+                                elif go:
+                                    print('go')
+                                    return json.dumps(potmove)
+
+            try:
+                state.update(move, player)
+                return json.dumps(move)
+            except:
+                check += 1
+                print('check numéro', check)
+
 
 
 if __name__ == '__main__':
