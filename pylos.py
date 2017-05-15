@@ -11,21 +11,23 @@ import json
 
 from lib import game
 
+
 class PylosState(game.GameState):
-    '''Class representing a state for the Pylos game.'''
+    """Class representing a state for the Pylos game."""
+
     def __init__(self, initialstate=None):
-        
-        if initialstate == None:
+
+        if initialstate is None:
             # define a layer of the board
             def squareMatrix(size):
                 matrix = []
                 for i in range(size):
-                    matrix.append([None]*size)
+                    matrix.append([None] * size)
                 return matrix
 
             board = []
             for i in range(4):
-                board.append(squareMatrix(4-i))
+                board.append(squareMatrix(4 - i))
 
             initialstate = {
                 'board': board,
@@ -37,7 +39,7 @@ class PylosState(game.GameState):
 
     def get(self, layer, row, column):
         if layer < 0 or row < 0 or column < 0:
-            raise game.InvalidMoveException('The position ({}) is outside of the board'.format([layer, row, column]))         
+            raise game.InvalidMoveException('The position ({}) is outside of the board'.format([layer, row, column]))
         try:
             return self._state['visible']['board'][layer][row][column]
         except:
@@ -50,15 +52,15 @@ class PylosState(game.GameState):
             return None
 
     def validPosition(self, layer, row, column):
-        if self.get(layer, row, column) != None:
+        if self.get(layer, row, column) is not None:
             raise game.InvalidMoveException('The position ({}) is not free'.format([layer, row, column]))
 
         if layer > 0:
             if (
-                self.get(layer-1, row, column) == None or
-                self.get(layer-1, row+1, column) == None or
-                self.get(layer-1, row+1, column+1) == None or
-                self.get(layer-1, row, column+1) == None
+                                    self.get(layer - 1, row, column) is None or
+                                    self.get(layer - 1, row + 1, column) is None or
+                                self.get(layer - 1, row + 1, column + 1) is None or
+                            self.get(layer - 1, row, column + 1) is None
             ):
                 raise game.InvalidMoveException('The position ({}) is not stable'.format([layer, row, column]))
 
@@ -68,10 +70,10 @@ class PylosState(game.GameState):
 
         if layer < 3:
             if (
-                self.safeGet(layer+1, row, column) != None or
-                self.safeGet(layer+1, row-1, column) != None or
-                self.safeGet(layer+1, row-1, column-1) != None or
-                self.safeGet(layer+1, row, column-1) != None
+                                    self.safeGet(layer + 1, row, column) != None or
+                                    self.safeGet(layer + 1, row - 1, column) != None or
+                                self.safeGet(layer + 1, row - 1, column - 1) != None or
+                            self.safeGet(layer + 1, row, column - 1) != None
             ):
                 raise game.InvalidMoveException('The position ({}) is not movable'.format([layer, row, column]))
 
@@ -80,19 +82,19 @@ class PylosState(game.GameState):
 
         def isSquare(layer, row, column):
             if (
-                self.safeGet(layer, row, column) != None and
-                self.safeGet(layer, row+1, column) == self.safeGet(layer, row, column) and
-                self.safeGet(layer, row+1, column+1) == self.safeGet(layer, row, column) and
-                self.safeGet(layer, row, column+1) == self.safeGet(layer, row, column)
+                                    self.safeGet(layer, row, column) is not None and
+                                    self.safeGet(layer, row + 1, column) == self.safeGet(layer, row, column) and
+                                self.safeGet(layer, row + 1, column + 1) == self.safeGet(layer, row, column) and
+                            self.safeGet(layer, row, column + 1) == self.safeGet(layer, row, column)
             ):
                 return True
             return False
 
         if (
-            isSquare(layer, row, column) or
-            isSquare(layer, row-1, column) or
-            isSquare(layer, row-1, column-1) or
-            isSquare(layer, row, column-1)
+                            isSquare(layer, row, column) or
+                            isSquare(layer, row - 1, column) or
+                        isSquare(layer, row - 1, column - 1) or
+                    isSquare(layer, row, column - 1)
         ):
             return True
         return False
@@ -109,7 +111,7 @@ class PylosState(game.GameState):
         if sphere != player:
             raise game.InvalidMoveException('not your sphere')
         self._state['visible']['board'][layer][row][column] = None
-        
+
     # update the state with the move
     # raise game.InvalidMoveException
     def update(self, move, player):
@@ -126,7 +128,7 @@ class PylosState(game.GameState):
             try:
                 self.set(move['to'], player)
             except game.InvalidMoveException as e:
-                self.set(move['from'], player) 
+                self.set(move['from'], player)
                 raise e
         else:
             raise game.InvalidMoveException('Invalid Move:\n{}'.format(move))
@@ -141,7 +143,6 @@ class PylosState(game.GameState):
                 state['reserve'][player] += 1
 
         state['turn'] = (state['turn'] + 1) % 2
-
 
     # return 0 or 1 if a winner, return None if draw, return -1 if game continue
     def winner(self):
@@ -159,8 +160,8 @@ class PylosState(game.GameState):
         return 'Light' if val == 0 else 'Dark'
 
     def printSquare(self, matrix):
-        print(' ' + '_'*(len(matrix)*2-1))
-        print('\n'.join(map(lambda row : '|' + '|'.join(map(self.val2str, row)) + '|', matrix)))
+        print(' ' + '_' * (len(matrix) * 2 - 1))
+        print('\n'.join(map(lambda row: '|' + '|'.join(map(self.val2str, row)) + '|', matrix)))
 
     # print the state
     def prettyprint(self):
@@ -168,20 +169,22 @@ class PylosState(game.GameState):
         for layer in range(4):
             self.printSquare(state['board'][layer])
             print()
-        
+
         for player, reserve in enumerate(state['reserve']):
             print('Reserve of {}:'.format(self.player2str(player)))
-            print((self.val2str(player)+' ')*reserve)
+            print((self.val2str(player) + ' ') * reserve)
             print()
-        
+
         print('{} to play !'.format(self.player2str(state['turn'])))
-        #print(json.dumps(self._state['visible'], indent=4))       
+        # print(json.dumps(self._state['visible'], indent=4))
+
 
 class PylosServer(game.GameServer):
     '''Class representing a server for the Pylos game.'''
+
     def __init__(self, verbose=False):
         super().__init__('Pylos', 2, PylosState(), verbose=verbose)
-    
+
     def applymove(self, move):
         try:
             self._state.update(json.loads(move), self.currentplayer)
@@ -190,15 +193,32 @@ class PylosServer(game.GameServer):
 
 
 class PylosClient(game.GameClient):
-    '''Class representing a client for the Pylos game.'''
+    """Class representing a client for the Pylos game."""
+
     def __init__(self, name, server, verbose=False):
         super().__init__(server, PylosState, verbose=verbose)
         self.__name = name
-    
+
+    def wayup(self, state):
+        layer = 1
+        while layer <= 4:
+            for row in range(4 - layer):
+                for column in range(4 - layer):
+                    try:
+                        state.update({
+                            'move': 'place',
+                            'to': [layer, row, column]
+                        }, 0)
+                        return True
+                    except game.InvalidMoveException:
+                        print('nothing')
+            layer += 1
+        return False
+
     def _handle(self, message):
         pass
-    
-    #return move as string
+
+    # return move as string
     def _nextmove(self, state):
         '''
         example of moves
@@ -227,9 +247,10 @@ class PylosClient(game.GameClient):
         return it in JSON
         '''
         for layer in range(4):
-            for row in range(4-layer):
-                for column in range(4-layer):
+            for row in range(4 - layer):
+                for column in range(4 - layer):
                     if state.get(layer, row, column) == None:
+                        print(self.wayup(state))
                         return json.dumps({
                             'move': 'place',
                             'to': [layer, row, column]
