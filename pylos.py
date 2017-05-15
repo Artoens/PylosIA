@@ -5,8 +5,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import socket
-import sys
 import json
 
 from lib import game
@@ -59,21 +57,21 @@ class PylosState(game.GameState):
             if (
                                     self.get(layer - 1, row, column) is None or
                                     self.get(layer - 1, row + 1, column) is None or
-                                self.get(layer - 1, row + 1, column + 1) is None or
-                            self.get(layer - 1, row, column + 1) is None
+                                    self.get(layer - 1, row + 1, column + 1) is None or
+                                    self.get(layer - 1, row, column + 1) is None
             ):
                 raise game.InvalidMoveException('The position ({}) is not stable'.format([layer, row, column]))
 
     def canMove(self, layer, row, column):
-        if self.get(layer, row, column) == None:
+        if self.get(layer, row, column) is None:
             raise game.InvalidMoveException('The position ({}) is empty'.format([layer, row, column]))
 
         if layer < 3:
             if (
-                                    self.safeGet(layer + 1, row, column) != None or
-                                    self.safeGet(layer + 1, row - 1, column) != None or
-                                self.safeGet(layer + 1, row - 1, column - 1) != None or
-                            self.safeGet(layer + 1, row, column - 1) != None
+                                    self.safeGet(layer + 1, row, column) is not None or
+                                    self.safeGet(layer + 1, row - 1, column) is not None or
+                                    self.safeGet(layer + 1, row - 1, column - 1) is not None or
+                                    self.safeGet(layer + 1, row, column - 1) is not None
             ):
                 raise game.InvalidMoveException('The position ({}) is not movable'.format([layer, row, column]))
 
@@ -84,8 +82,8 @@ class PylosState(game.GameState):
             if (
                                     self.safeGet(layer, row, column) is not None and
                                     self.safeGet(layer, row + 1, column) == self.safeGet(layer, row, column) and
-                                self.safeGet(layer, row + 1, column + 1) == self.safeGet(layer, row, column) and
-                            self.safeGet(layer, row, column + 1) == self.safeGet(layer, row, column)
+                                    self.safeGet(layer, row + 1, column + 1) == self.safeGet(layer, row, column) and
+                                    self.safeGet(layer, row, column + 1) == self.safeGet(layer, row, column)
             ):
                 return True
             return False
@@ -93,8 +91,8 @@ class PylosState(game.GameState):
         if (
                             isSquare(layer, row, column) or
                             isSquare(layer, row - 1, column) or
-                        isSquare(layer, row - 1, column - 1) or
-                    isSquare(layer, row, column - 1)
+                            isSquare(layer, row - 1, column - 1) or
+                            isSquare(layer, row, column - 1)
         ):
             return True
         return False
@@ -180,7 +178,7 @@ class PylosState(game.GameState):
 
 
 class PylosServer(game.GameServer):
-    '''Class representing a server for the Pylos game.'''
+    """Class representing a server for the Pylos game."""
 
     def __init__(self, verbose=False):
         super().__init__('Pylos', 2, PylosState(), verbose=verbose)
@@ -220,7 +218,7 @@ class PylosClient(game.GameClient):
 
     # return move as string
     def _nextmove(self, state):
-        '''
+        """
         example of moves
         coordinates are like [layer, row, colums]
         move = {
@@ -245,7 +243,8 @@ class PylosClient(game.GameClient):
         }
         
         return it in JSON
-        '''
+        """
+        """
         for layer in range(4):
             for row in range(4 - layer):
                 for column in range(4 - layer):
@@ -255,6 +254,19 @@ class PylosClient(game.GameClient):
                             'move': 'place',
                             'to': [layer, row, column]
                         })
+        """
+        move = {}
+        if state['turn'] == 0:
+            row = 1
+            column = 1
+            try:
+                move = {
+                    'move': 'place', 'to': [0, row, column]}
+            except game.InvalidMoveException:
+                move = {
+                    'move': 'place', 'to': [0, row + 1, column + 1]}
+
+        return json.dumps(move)
 
 
 if __name__ == '__main__':
