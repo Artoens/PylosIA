@@ -197,6 +197,22 @@ class PylosClient(game.GameClient):
         super().__init__(server, PylosState, verbose=verbose)
         self.__name = name
 
+
+
+    def cancelupdate(self, state, move, player):
+        state['turn'] = (state['turn'] + 1) % 2
+        if move['move'] == 'place':
+            state.remove(move['to'], player)
+            state['reserve'][player] += 1
+        elif move['move'] == 'move':
+            sphere = state.remove(move['to'], player)
+            state.set(move['from'], player)
+
+        if 'remove' in move:
+            for coord in move['remove']:
+                sphere = state.set(coord, player)
+                state['reserve'][player] -= 1
+
     def wayup(self, state, player):
         layer = 1
         while layer <= 4:
@@ -205,8 +221,9 @@ class PylosClient(game.GameClient):
                     try:
                         move = {'move': 'place', 'to': [layer, row, column]}
                         state.update(move, player)
+                        self.cancelupdate(state, move, player)
                         return True
-                    except :
+                    except:
                         pass
             layer += 1
         return False
@@ -270,19 +287,24 @@ class PylosClient(game.GameClient):
 
 
             if check > 3:
-                full = False
                 go = False
-                for layer in range(4):
-                    for row in range(4 - layer):
-                        for column in range(4 - layer):
+                layer = 0
+                while layer < 4:
+                    row = 0
+                    while row < (4 - layer):
+                        column = 0
+                        while column < (4 - layer):
                             if state.get(layer, row, column) is None:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
+                                print(potmove)
+                                print('état 1', state)
                                 state.update(potmove, player)
+                                print('état 2', state)
+                                print('wayup', self.wayup(state, noplayer))
                                 if not self.wayup(state, noplayer):
+                                    print('retrun no up')
                                     return json.dumps(potmove)
-                                elif self.wayup(state, noplayer):
-                                    full = True
-                                elif full:
+                                elif row == (3 - layer) and column == (3 - layer):
                                     print('reset')
                                     row = 0
                                     column = 0
@@ -290,6 +312,13 @@ class PylosClient(game.GameClient):
                                 elif go:
                                     print('go')
                                     return json.dumps(potmove)
+                                self.cancelupdate(state, potmove, player)
+                                print('état reset', state)
+                            elif row == (3 - layer) and column == (3 - layer):
+                                layer += 1
+                                go = False
+                            column += 1
+                        row += 1
 
             try:
                 state.update(move, player)
