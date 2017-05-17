@@ -1,16 +1,37 @@
-	-Premier mouve au mileu
-		2eme: en opposition
--Crée un carré:
+	-Premier mouve au mileu ok
+		2eme: en opposition ok
+-Crï¿½e un carrï¿½:
 	-reprendre: plce montante
-	-truc pas dans le carré
+	-truc pas dans le carrï¿½
 	-sinon rien
--Contrer un carré
--prendre une bill et la montée:
-	vérifier de pas ouvrir un carré
--préparer un carré:
-	pas crée de "place montante"
+-Contrer un carrï¿½
+-prendre une bill et la montï¿½e:
+	vï¿½rifier de pas ouvrir un carrï¿½
+-prï¿½parer un carrï¿½:
+	pas crï¿½e de "place montante"
 -placer en hauteur
 -mettre en oblique
-	-vérifier place montant
+	-vï¿½rifier place montant
 -dans l'ordre
 	verifier place montante
+
+	verif place montante : done
+
+
+
+	 for layer in range(4):
+                if self.wayup(state, player, layer)['wayup']:
+                    move = {}
+                    move['move'] = 'move'
+                    move['to'] = self.wayup(state, player, layer)['pos']['to']
+                    for row in range(3):
+                        for column in range(3):
+                            i = layer
+                            while i >= 0:
+                                move['from'] = [i, row, column]
+                                try:
+                                    state.update(move, player)
+                                    return json.dumps(move)
+                                except:
+                                    i -= 1
+
