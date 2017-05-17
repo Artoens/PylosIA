@@ -223,11 +223,13 @@ class PylosClient(game.GameClient):
                         move = {'move': 'place', 'to': [layer, row, column]}
                         state.update(move, player)
                         self.cancelupdate(state, move, player)
-                        return {'wayup': True, 'move': move}
+                        return {'wayup': True, 'pos': move}
                     except game.InvalidMoveException:
                         pass
             layer += 1
         return {'wayup': False, 'move': None}
+
+
 
     def _handle(self, message):
        pass
@@ -286,30 +288,53 @@ class PylosClient(game.GameClient):
                 else:
                     move = {'move': 'place', 'to': [0, lastfound[1] - 1, lastfound[2] - 1]}
 
+            for layer in range(4):
+                if self.wayup(state, player, layer)['wayup']:
+                    move = {}
+                    move['move'] = 'move'
+                    move['to'] = self.wayup(state, player, layer)['pos']['to']
+                    for row in range(3):
+                        for column in range(3):
+                            i = layer
+                            while i >= 0:
+                                move['from'] = [i, row, column]
+                                try:
+                                    state.update(move, player)
+                                    return json.dumps(move)
+                                except:
+                                    i -= 1
+
 
             if check > 3:
-                go = False
                 layer = 0
+                go = False
                 while layer < 4:
                     row = 0
                     while row < (4 - layer):
                         column = 0
                         while column < (4 - layer):
+                            print('Col', column)
+                            print('lign', row)
+                            print('étage', layer)
+                            print(go)
+                            print('-------------')
                             if state.get(layer, row, column) is None:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
                                 state.update(potmove, player)
-                                if not self.wayup(state, noplayer, layer)['wayup']:
+                                if not self.wayup(state, noplayer, layer)['wayup'] or go:
                                     return json.dumps(potmove)
-                                elif row == (3 - layer) and column == (3 - layer) and not go:
+                                if row == (3 - layer) and column == (3 - layer) and not go:
+                                    print('reset')
                                     row = 0
                                     column = -1
                                     go = True
-                                elif go:
-                                    return json.dumps(potmove)
                                 self.cancelupdate(state, potmove, player)
+                            if row == (3 - layer) and column == (3 - layer) and go:
+                                layer += 1
+                                go = False
                             column += 1
                         row += 1
-                    layer += 1
+
 
             try:
                 state.update(move, player)
