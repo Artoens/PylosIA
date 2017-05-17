@@ -289,6 +289,19 @@ class PylosClient(game.GameClient):
                     move = {'move': 'place', 'to': [0, lastfound[1] - 1, lastfound[2] - 1]}
 
             for layer in range(4):
+                for row in range(3):
+                    for column in range(3):
+                        try:
+                            move = {'move': 'place', 'to': [layer, row, column]}
+                            if state.createSquare((layer, row, column)):
+                                move['remove'] = [layer, row, column]
+                                state.update(move, player)
+                                return json.dumps(move)
+                        except game.InvalidMoveException:
+                            pass
+
+
+            for layer in range(4):
                 if self.wayup(state, player, layer)['wayup']:
                     move = {}
                     move['move'] = 'move'
@@ -304,7 +317,6 @@ class PylosClient(game.GameClient):
                                 except:
                                     i -= 1
 
-
             if check > 3:
                 layer = 0
                 go = False
@@ -313,11 +325,6 @@ class PylosClient(game.GameClient):
                     while row < (4 - layer):
                         column = 0
                         while column < (4 - layer):
-                            print('Col', column)
-                            print('lign', row)
-                            print('étage', layer)
-                            print(go)
-                            print('-------------')
                             if state.get(layer, row, column) is None:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
                                 state.update(potmove, player)
