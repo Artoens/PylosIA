@@ -1,17 +1,17 @@
 	-Premier mouve au mileu ok
 		2eme: en opposition ok
--Cr�e un carr�:
-	-reprendre: plce montante
+-Crée un carré:
+	-reprendre: plce montante  ok
 	-truc pas dans le carr�
 	-sinon rien
--Contrer un carr�
--prendre une bill et la mont�e:
-	v�rifier de pas ouvrir un carr�
--pr�parer un carr�:
-	pas cr�e de "place montante"
--placer en hauteur
+-Contrer un carré ok
+-prendre une bill et la montée: ok
+	vérifier de pas ouvrir un carré pas ok
+-préparer un carré:
+	pas crée de "place montante"
+-placer en hauteur ok mais avant de préparer un carré
 -mettre en oblique
-	-v�rifier place montant
+	-vérifier place montant
 -dans l'ordre
 	verifier place montante
 
