@@ -227,7 +227,7 @@ class PylosClient(game.GameClient):
                     except game.InvalidMoveException:
                         pass
             layer += 1
-        return {'wayup': False, 'move': None}
+        return {'wayup': False, 'pos': None}
 
 
 
@@ -341,21 +341,31 @@ class PylosClient(game.GameClient):
                                         i -= 1
 
             if check == 5:
-                for layer in range(4):
-                    for row in range(4-layer):
-                        for column in range(4-layer):
+                go = False
+                layer = 0
+                while layer < 4:
+                    row = 0
+                    while row < (4 - layer):
+                        column = 0
+                        while column < (4 - layer):
                             if state.get(layer, row, column) is None:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
                                 state.update(potmove, player)
-                                if not self.wayup(state, noplayer, layer)['wayup']:
+                                if not self.wayup(state, noplayer, layer):
+                                    return json.dumps(potmove)
+                                elif row == (3 - layer) and column == (3 - layer) and not go:
+                                    row = 0
+                                    column = 0
+                                    go = True
+                                elif go:
                                     return json.dumps(potmove)
                                 self.cancelupdate(state, potmove, player)
-            if check > 5:
-                for layer in range(4):
-                    for row in range(4-layer):
-                        for column in range(4-layer):
-                            if state.get(layer, row, column) is None:
-                                return json.dumps({'move': 'place', 'to': [layer, row, column]})
+                            elif row == (3 - layer) and column == (3 - layer):
+                                layer += 1
+                                go = False
+                            column += 1
+                        row += 1
+
 
 
             try:
@@ -363,7 +373,6 @@ class PylosClient(game.GameClient):
                 return json.dumps(move)
             except:
                 check += 1
-                print('check', check)
 
 
 
