@@ -197,8 +197,6 @@ class PylosClient(game.GameClient):
         super().__init__(server, PylosState, verbose=verbose)
         self.__name = name
 
-
-
     def cancelupdate(self, state, move, player):
         st = state._state['visible']
         st['turn'] = (st['turn'] + 1) % 2
@@ -229,10 +227,8 @@ class PylosClient(game.GameClient):
             layer += 1
         return {'wayup': False, 'pos': None}
 
-
-
     def _handle(self, message):
-       pass
+        pass
 
     # return move as string
     def _nextmove(self, state):
@@ -283,15 +279,15 @@ class PylosClient(game.GameClient):
                     move = {'move': 'place', 'to': [0, 1, 1]}
                 elif player == 1 and count == 1:
                     if check <= 1:
-                        move = {'move': 'place', 'to': [0, lastfound[1]+1, lastfound[2]+1]}
+                        move = {'move': 'place', 'to': [0, lastfound[1] + 1, lastfound[2] + 1]}
                     else:
                         move = {'move': 'place', 'to': [0, lastfound[1] - 1, lastfound[2] - 1]}
 
             if check == 2:
                 second = False
                 for layer in range(4):
-                    for row in range(4-layer):
-                        for column in range(4-layer):
+                    for row in range(4 - layer):
+                        for column in range(4 - layer):
                             update = False
                             try:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
@@ -307,7 +303,7 @@ class PylosClient(game.GameClient):
                                             if self.wayup(state, noplayer, layer)['wayup'] and not second:
                                                 rm = self.wayup(state, noplayer, layer)['pos']['to']
                                                 try:
-                                                    potmove['remove'].append([rm[0]-1, rm[1]+nbr1, rm[2]+nbr2])
+                                                    potmove['remove'].append([rm[0] - 1, rm[1] + nbr1, rm[2] + nbr2])
                                                     state.update(potmove, player)
                                                     second = True
                                                 except game.InvalidMoveException:
@@ -332,8 +328,8 @@ class PylosClient(game.GameClient):
 
             if check == 3:
                 for layer in range(4):
-                    for row in range(4-layer):
-                        for column in range(4-layer):
+                    for row in range(4 - layer):
+                        for column in range(4 - layer):
                             update = False
                             try:
                                 potmove = {'move': 'place', 'to': [layer, row, column]}
@@ -347,23 +343,34 @@ class PylosClient(game.GameClient):
                                 if update:
                                     self.cancelupdate(state, potmove, noplayer)
 
-
             if check == 4:
                 for layer in range(4):
                     if self.wayup(state, player, layer)['wayup']:
                         move = {}
                         move['move'] = 'move'
                         move['to'] = self.wayup(state, player, layer)['pos']['to']
-                        for row in range(3):
-                            for column in range(3):
+                        for row in range(4-layer):
+                            for column in range(4-layer):
                                 i = layer
                                 while i >= 0:
+                                    update = False
+                                    updatenp = False
                                     move['from'] = [i, row, column]
                                     try:
                                         state.update(move, player)
-                                        return json.dumps(move)
+                                        update = True
+                                        noplymv = {'move': 'place', 'to': move['from']}
+                                        updatenp = True
+                                        state.update(noplymv, noplayer)
+                                        if not state.createSquare(move['from']):
+                                            return json.dumps(move)
                                     except game.InvalidMoveException:
-                                        i -= 1
+                                        pass
+                                    if updatenp:
+                                        self.cancelupdate(state, noplymv, noplayer)
+                                    if update:
+                                        self.cancelupdate(state, move, player)
+                                    i -= 1
 
             if check == 5:
                 go = False
@@ -391,14 +398,11 @@ class PylosClient(game.GameClient):
                             column += 1
                         row += 1
 
-
-
             try:
                 state.update(move, player)
                 return json.dumps(move)
             except:
                 check += 1
-
 
 
 if __name__ == '__main__':
