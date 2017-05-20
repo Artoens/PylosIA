@@ -288,6 +288,7 @@ class PylosClient(game.GameClient):
                         move = {'move': 'place', 'to': [0, lastfound[1] - 1, lastfound[2] - 1]}
 
             if check == 2:
+                second = False
                 for layer in range(4):
                     for row in range(4-layer):
                         for column in range(4-layer):
@@ -297,14 +298,27 @@ class PylosClient(game.GameClient):
                                 state.update(potmove, player)
                                 update = True
                                 if state.createSquare((layer, row, column)):
+                                    self.cancelupdate(state, {'move': 'place', 'to': [layer, row, column]}, player)
+                                    update = False
                                     potmove['remove'] = []
                                     potmove['remove'].append([layer, row, column])
+                                    for nbr1 in range(1):
+                                        for nbr2 in range(1):
+                                            if self.wayup(state, noplayer, layer)['wayup'] and not second:
+                                                rm = self.wayup(state, noplayer, layer)['pos']['to']
+                                                try:
+                                                    potmove['remove'].append([rm[0]-1, rm[1]+nbr1, rm[2]+nbr2])
+                                                    state.update(potmove, player)
+                                                    second = True
+                                                except game.InvalidMoveException as e:
+                                                    print(e)
+                                                    potmove['remove'].pop()
                                     return json.dumps(potmove)
                             except game.InvalidMoveException:
                                 pass
-                            finally:
-                                if update:
-                                    self.cancelupdate(state, {'move': 'place', 'to': [layer, row, column]}, player)
+                            if update:
+                                self.cancelupdate(state, {'move': 'place', 'to': [layer, row, column]}, player)
+
             if check == 3:
                 for layer in range(4):
                     for row in range(4-layer):
