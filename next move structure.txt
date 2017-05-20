@@ -18,20 +18,3 @@
 	verif place montante : done
 
 
-
-	 for layer in range(4):
-                if self.wayup(state, player, layer)['wayup']:
-                    move = {}
-                    move['move'] = 'move'
-                    move['to'] = self.wayup(state, player, layer)['pos']['to']
-                    for row in range(3):
-                        for column in range(3):
-                            i = layer
-                            while i >= 0:
-                                move['from'] = [i, row, column]
-                                try:
-                                    state.update(move, player)
-                                    return json.dumps(move)
-                                except:
-                                    i -= 1
-
